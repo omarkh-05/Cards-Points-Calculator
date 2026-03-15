@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Cards Points Calculator</title>
+</head>
+<body>
+    <div class="container">
+    <div id="home-view" class="view active">
+        <header>
+            <h1 style="margin-bottom: 5px;">مسجل النقاط</h1>
+            <p style="color: var(--text-gray); font-size: 0.9rem;">إدارة جلسة اللعب بكل سهولة</p>
+        </header>
+        <div class="game-menu">
+            <div class="game-btn" onclick="initGame('trix', 'تركس')">تركس</div>
+            <div class="game-btn" onclick="initGame('complex', 'كومبليكس')">كومبليكس</div>
+            <div class="game-btn" onclick="initGame('tarneeb', 'طرنيب')">طرنيب</div>
+            <div class="game-btn" onclick="initGame('hand', 'هاند')">هاند</div>
+        </div>
+    </div>
+
+    <div id="game-view" class="view">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <button onclick="confirmExit()" style="background:none; border:1px solid rgba(255,255,255,0.2); color:white; padding:6px 14px; border-radius:8px; cursor:pointer;">خروج</button>
+            <h2 id="current-game-title" style="margin:0; font-size: 1.4rem;"></h2>
+            <div style="width:50px"></div>
+        </div>
+
+        <div id="mode-selector" class="section-box">
+            <label>وضع اللعب:</label>
+            <div class="mode-container">
+                <button id="mode-normal" class="mode-btn active" onclick="handleModeSwitch('normal')">👤 عادي</button>
+                <button id="mode-team" class="mode-btn" onclick="handleModeSwitch('team')">👥 شراكة</button>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div class="add-player-box">
+                <input type="text" id="player-input" placeholder="اسم اللاعب/الفريق">
+                <button class="btn-plus" onclick="addPlayer()">+</button>
+            </div>
+            
+            <div id="kingdom-section" style="display:none; margin-top:10px;">
+                <label>اختيار النوع للدورة الحالية:</label>
+                <select id="kingdom-select" onchange="renderPlayers()"></select>
+            </div>
+        </div>
+
+        <button id="btn-round-control" class="btn-main btn-start" onclick="toggleRound()">ابدأ الجولة</button>
+
+        <button id="tarneeb-cheat-btn" class="btn-cheat-global" style="display:none;" onclick="openTarneebCheatModal()">مسكته بغش 🕵️‍♂️</button>
+
+        <div id="players-list"></div>
+
+        <div id="bulk-action-container" style="display:none; margin-top:15px; margin-bottom: 20px;">
+            <button class="btn-main btn-submit-all" onclick="submitAllScores()">تسجيل النقاط للجميع 📝</button>
+        </div>
+
+        <div class="footer-controls">
+            <button class="btn-footer" style="background:var(--warning-amber)" onclick="showWinner()">🏆 المتصدر</button>
+            <button class="btn-footer" style="background:var(--danger-red); color:white" onclick="confirmEndGame()">🏁 إنهاء القيم</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <h2 id="modal-title" style="margin-top:0;"></h2>
+        <p id="modal-body" style="color: var(--text-gray); margin-bottom: 25px;"></p>
+        <div id="modal-selection" class="modal-selection-list"></div>
+        <div id="modal-btns" style="display:flex; gap:12px;"></div>
+    </div>
+</div>
+
+    <script src="script.js"></script>
+</body>
+</html>
