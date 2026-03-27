@@ -3,100 +3,539 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مسجل نقاط الشدة الفاخر</title>
-    
-    <!-- App Icons (Favicons) -->
-    <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/1041/1041935.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/1041/1041935.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="https://cdn-icons-png.flaticon.com/512/1041/1041935.png">
-    <meta name="apple-mobile-web-app-title" content="ScoreKeeper">
-    <meta name="application-name" content="ScoreKeeper">
-    <meta name="theme-color" content="#0a0f1e">
-    <link rel="stylesheet" href="./style.css">
+    <title>مسجل نقاط الشدة - المطور</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary-blue: #3b82f6;
+            --accent-green: #10b981;
+            --danger-red: #ef4444;
+            --warning-amber: #f59e0b;
+            --text-white: #f8fafc;
+            --text-gray: #94a3b8;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-white);
+            margin: 0; padding: 0; direction: rtl;
+        }
+
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Views */
+        .view { display: none; }
+        .view.active { display: block; }
+
+        header { text-align: center; padding: 20px 0; }
+        .game-menu { display: grid; gap: 15px; margin-top: 20px; }
+        .game-btn {
+            background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05);
+            padding: 25px; border-radius: 16px; color: white; font-size: 1.3rem;
+            font-weight: bold; text-align: center; cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .game-btn:active { transform: scale(0.95); }
+
+        .section-box { background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        label { display: block; margin-bottom: 12px; color: var(--text-gray); font-size: 0.9rem; font-weight: bold; }
+        
+        .mode-container {
+            display: flex;
+            background: var(--card-bg);
+            padding: 6px;
+            border-radius: 14px;
+            gap: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .mode-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--text-gray);
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .mode-btn.active {
+            background: var(--primary-blue);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        input, select {
+            background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);
+            color: white; padding: 12px; border-radius: 10px; width: 100%; font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        input:focus { border-color: var(--primary-blue); outline: none; }
+
+        .add-player-box { display: flex; gap: 10px; margin-bottom: 10px; }
+        .btn-plus { background: var(--primary-blue); color: white; border: none; width: 55px; border-radius: 10px; font-size: 1.8rem; cursor: pointer; }
+
+        /* Player Cards */
+        .player-card { 
+            background: var(--card-bg); border-radius: 20px; padding: 18px; margin-bottom: 15px; 
+            border-right: 6px solid var(--primary-blue);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .player-name-tag { font-weight: bold; font-size: 1.1rem; color: var(--text-white); }
+        .total-score { font-size: 1.6rem; font-weight: 800; color: var(--accent-green); }
+        
+        .score-history { 
+            display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px;
+            padding: 5px 0;
+        }
+        .history-badge {
+            background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 600; color: var(--text-gray);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .history-badge.positive { color: var(--accent-green); border-color: rgba(16, 185, 129, 0.2); }
+        .history-badge.negative { color: var(--danger-red); border-color: rgba(239, 68, 68, 0.2); }
+
+        /* Buttons */
+        .btn-main { 
+            width: 100%; padding: 16px; border-radius: 14px; border: none; 
+            font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+        .btn-start { background: var(--primary-blue); color: white; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
+        .btn-end-round { background: var(--warning-amber); color: black; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); }
+        .btn-submit-all { background: var(--accent-green); color: white; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
+        .btn-individual { background: var(--accent-green); color: white; padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-cheat-global { background: var(--danger-red); color: white; width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: bold; margin-bottom: 15px; }
+
+        .footer-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto; padding-top: 20px; }
+        .btn-footer { padding: 14px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+
+        /* Modal */
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 24px; width: 100%; max-width: 380px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        
+        .modal-selection-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .selection-btn { background: rgba(255,255,255,0.1); color: white; padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; font-weight: bold; text-align: center; }
+        .selection-btn:hover { background: var(--primary-blue); }
+        
+        .empty-history { font-size: 0.8rem; color: var(--text-gray); font-style: italic; }
+    </style>
 </head>
 <body>
+
 <div class="container">
-    <!-- Home View -->
     <div id="home-view" class="view active">
         <header>
-            <h1>مسجل النقاط الفاخر</h1>
-            <p style="color: var(--text-gray); font-size: 0.95rem; margin-top: 8px;">اختر اللعبة وابدأ التنافس</p>
+            <h1 style="margin-bottom: 5px;">مسجل النقاط</h1>
+            <p style="color: var(--text-gray); font-size: 0.9rem;">إدارة جلسة اللعب بكل سهولة</p>
         </header>
         <div class="game-menu">
-            <div class="game-btn" onclick="GAME_ENGINE.initGame('trix', 'تركس 🃏')">تركس</div>
-            <div class="game-btn" onclick="GAME_ENGINE.initGame('complex', 'كومبليكس 💎')">كومبليكس</div>
-            <div class="game-btn" onclick="GAME_ENGINE.initGame('tarneeb', 'طرنيب ♠️')">طرنيب</div>
-            <div class="game-btn" onclick="GAME_ENGINE.initGame('hand', 'هاند ♦️')">هاند</div>
-            <div class="game-btn history-btn" onclick="UI_RENDERER.showLogsView()">سجل اللعب الأخير 📜</div>
+            <div class="game-btn" onclick="initGame('trix', 'تركس')">تركس</div>
+            <div class="game-btn" onclick="initGame('complex', 'كومبليكس')">كومبليكس</div>
+            <div class="game-btn" onclick="initGame('tarneeb', 'طرنيب')">طرنيب</div>
+            <div class="game-btn" onclick="initGame('hand', 'هاند')">هاند</div>
         </div>
     </div>
 
-    <!-- Logs View -->
-    <div id="logs-view" class="view">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-            <button onclick="UI_RENDERER.switchView('home')" style="background:var(--surface-glass); border:1px solid rgba(255,255,255,0.1); color:white; padding:8px 18px; border-radius:12px; cursor:pointer; font-weight:bold;">الرئيسية</button>
-            <h2 style="margin:0; font-size: 1.5rem; color: var(--royal-gold);">سجل الأبطال</h2>
-            <div style="width:60px"></div>
-        </div>
-        <div id="logs-list"></div>
-    </div>
-
-    <!-- Game View -->
     <div id="game-view" class="view">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-            <button onclick="GAME_ENGINE.confirmExit()" style="background:var(--surface-glass); border:1px solid rgba(255,255,255,0.1); color:white; padding:8px 18px; border-radius:12px; cursor:pointer;">خروج</button>
-            <h2 id="current-game-title" style="margin:0; font-size: 1.5rem;"></h2>
-            <div style="width:60px"></div>
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <button onclick="confirmExit()" style="background:none; border:1px solid rgba(255,255,255,0.2); color:white; padding:6px 14px; border-radius:8px; cursor:pointer;">خروج</button>
+            <h2 id="current-game-title" style="margin:0; font-size: 1.4rem;"></h2>
+            <div style="width:50px"></div>
         </div>
 
         <div id="mode-selector" class="section-box">
-            <label>طريقة اللعب</label>
+            <label>وضع اللعب:</label>
             <div class="mode-container">
-                <button id="mode-normal" class="mode-btn active" onclick="GAME_ENGINE.handleModeSwitch('normal')">👤 أفراد</button>
-                <button id="mode-team" class="mode-btn" onclick="GAME_ENGINE.handleModeSwitch('team')">👥 شراكة</button>
+                <button id="mode-normal" class="mode-btn active" onclick="handleModeSwitch('normal')">👤 عادي</button>
+                <button id="mode-team" class="mode-btn" onclick="handleModeSwitch('team')">👥 شراكة</button>
             </div>
         </div>
 
         <div class="section-box">
-            <label>إضافة لاعبين</label>
             <div class="add-player-box">
-                <input type="text" id="player-input" placeholder="اكتب اسم اللاعب هنا...">
-                <button class="btn-plus" onclick="GAME_ENGINE.addPlayer()">+</button>
+                <input type="text" id="player-input" placeholder="اسم اللاعب/الفريق">
+                <button class="btn-plus" onclick="addPlayer()">+</button>
             </div>
             
-            <div id="kingdom-section" style="display:none; margin-top:15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
-                <label>نوع المملكة الحالية:</label>
-                <select id="kingdom-select" onchange="UI_RENDERER.renderPlayers()"></select>
+            <div id="kingdom-section" style="display:none; margin-top:10px;">
+                <label>اختيار النوع للدورة الحالية:</label>
+                <select id="kingdom-select" onchange="renderPlayers()"></select>
             </div>
         </div>
 
-        <button id="btn-round-control" class="btn-main btn-start" onclick="GAME_ENGINE.toggleRound()">بدأ الجولة الجديدة 🚀</button>
+        <button id="btn-round-control" class="btn-main btn-start" onclick="toggleRound()">ابدأ الجولة</button>
 
-        <button id="tarneeb-cheat-btn" class="btn-cheat-global" style="display:none;" onclick="GAME_ENGINE.openTarneebCheatModal()">فريق غش؟ (خصم 5) 🕵️‍♂️</button>
+        <button id="tarneeb-cheat-btn" class="btn-cheat-global" style="display:none;" onclick="openTarneebCheatModal()">مسكته بغش 🕵️‍♂️</button>
 
         <div id="players-list"></div>
 
-        <div id="bulk-action-container" style="display:none; margin: 20px 0;">
-            <button class="btn-main btn-submit-all" onclick="GAME_ENGINE.submitAllScores()">تثبيت نقاط الجولة ✅</button>
+        <div id="bulk-action-container" style="display:none; margin-top:15px; margin-bottom: 20px;">
+            <button class="btn-main btn-submit-all" onclick="submitAllScores()">تسجيل النقاط للجميع 📝</button>
         </div>
 
         <div class="footer-controls">
-            <button class="btn-footer" style="background:var(--surface-glass); color:var(--royal-gold); border: 1px solid var(--royal-gold);" onclick="GAME_ENGINE.showWinner()">🏆 المتصدر</button>
-            <button class="btn-footer" style="background:var(--danger-red); color:white" onclick="GAME_ENGINE.confirmEndGame()">🏁 إنهاء وقفل</button>
+            <button class="btn-footer" style="background:var(--warning-amber)" onclick="showWinner()">🏆 المتصدر</button>
+            <button class="btn-footer" style="background:var(--danger-red); color:white" onclick="confirmEndGame()">🏁 إنهاء القيم</button>
         </div>
     </div>
 </div>
 
 <div id="modal" class="modal">
     <div class="modal-content">
-        <h2 id="modal-title" style="margin-top:0; color: #fff;"></h2>
-        <p id="modal-body" style="color: var(--text-gray); margin-bottom: 30px; line-height: 1.6;"></p>
+        <h2 id="modal-title" style="margin-top:0;"></h2>
+        <p id="modal-body" style="color: var(--text-gray); margin-bottom: 25px;"></p>
         <div id="modal-selection" class="modal-selection-list"></div>
-        <div id="modal-btns" style="display:flex; gap:15px; margin-top: 10px;"></div>
+        <div id="modal-btns" style="display:flex; gap:12px;"></div>
     </div>
-  </div>
+</div>
 
-    
-<script src="./script.js"></script>
+<script>
+    const KINGDOM_VALUES = {
+        'latsh': -15, 'dinari': -10, 'banat': -25, 'sheikh': -75
+    };
+
+    const COMPLEX_OPTIONS = [
+        { id: 'latsh', name: 'لطوش' },
+        { id: 'dinari', name: 'ديناري' },
+        { id: 'banat', name: 'بنات' },
+        { id: 'sheikh', name: 'شيخ كبة' }
+    ];
+
+    const RANGE_LIMITS = {
+        'latsh': { min: 0, max: 13, sum: 13 },
+        'dinari': { min: 0, max: 13, sum: 13 },
+        'banat': { min: 4, max: 8, sum: 8 },
+        'sheikh': { min: 1, max: 2, sum: 2 },
+        'trix': { min: 1, max: 4, sum: 10 },
+        'tarneeb': { min: 0, max: 26, sum: 26 },
+        'hand': { min: -60, max: 300, sum: 500 }
+    };
+
+    const INITIAL_KINGDOMS = {
+        trix: [
+            { id: 'latsh', name: 'لطوش (-15)', val: -15 },
+            { id: 'dinari', name: 'ديناري (-10)', val: -10 },
+            { id: 'banat', name: 'بنات (-25)', val: -25 },
+            { id: 'sheikh', name: 'شيخ كبة (-75)', val: -75 },
+            { id: 'trix', name: 'تركس (مركز)', val: 'rank' }
+        ],
+        complex: [
+            { id: 'complex', name: 'كومبليكس', val: 'complex' },
+            { id: 'trix', name: 'تركس (مركز)', val: 'rank' }
+        ]
+    };
+
+    let gameState = {
+        type: '', mode: 'normal', players: [], roundActive: false, availableKingdoms: []
+    };
+
+    function initGame(type, title) {
+        gameState.type = type;
+        gameState.players = [];
+        gameState.roundActive = false;
+        gameState.mode = (type === 'tarneeb') ? 'team' : 'normal';
+        gameState.availableKingdoms = INITIAL_KINGDOMS[type] ? [...INITIAL_KINGDOMS[type]] : [];
+        
+        document.getElementById('current-game-title').innerText = title;
+        document.getElementById('mode-selector').style.display = (type === 'tarneeb') ? 'none' : 'block';
+        document.getElementById('tarneeb-cheat-btn').style.display = (type === 'tarneeb') ? 'block' : 'none';
+        
+        setMode(gameState.mode, true);
+        setupKingdoms();
+        renderPlayers();
+        updateRoundButton();
+        switchView('game');
+    }
+
+    function setupKingdoms() {
+        const section = document.getElementById('kingdom-section');
+        const select = document.getElementById('kingdom-select');
+        if (gameState.type === 'trix' || gameState.type === 'complex') {
+            section.style.display = 'block';
+            if (gameState.availableKingdoms.length === 0) gameState.availableKingdoms = [...INITIAL_KINGDOMS[gameState.type]];
+            select.innerHTML = '';
+            gameState.availableKingdoms.forEach(k => {
+                const opt = document.createElement('option');
+                opt.value = k.id; opt.innerText = k.name; select.appendChild(opt);
+            });
+        } else {
+            section.style.display = 'none';
+        }
+    }
+
+    function toggleRound() {
+        if (gameState.players.length === 0) {
+            showSimpleModal("تنبيه", "يرجى إضافة لاعبين قبل بدء الجولة.");
+            return;
+        }
+        gameState.roundActive = !gameState.roundActive;
+        
+        if (!gameState.roundActive) {
+            const select = document.getElementById('kingdom-select');
+            if (select && select.options.length > 0 && (gameState.type === 'trix' || gameState.type === 'complex')) {
+                const selectedId = select.value;
+                gameState.availableKingdoms = gameState.availableKingdoms.filter(k => k.id !== selectedId);
+                
+                if (gameState.availableKingdoms.length === 0) {
+                    gameState.availableKingdoms = [...INITIAL_KINGDOMS[gameState.type]];
+                    showSimpleModal("دورة جديدة", "انتهت الخيارات المتاحة، تم إعادة تحميل الممالك لدورة جديدة.");
+                }
+                setupKingdoms();
+            }
+            gameState.players.forEach(p => { p.usedComplexOptions = []; });
+        }
+        updateRoundButton();
+        renderPlayers();
+    }
+
+    function updateRoundButton() {
+        const btn = document.getElementById('btn-round-control');
+        btn.innerText = gameState.roundActive ? "أنهِ الجولة 🏁" : "ابدأ الجولة 🚀";
+        btn.className = gameState.roundActive ? "btn-main btn-end-round" : "btn-main btn-start";
+    }
+
+    function addPlayer() {
+        const input = document.getElementById('player-input');
+        const name = input.value.trim();
+        if (!name) return;
+        if (gameState.mode === 'normal' && gameState.players.length >= 4) return showSimpleModal("تنبيه", "أقصى عدد لاعبين هو 4.");
+        if (gameState.mode === 'team' && gameState.players.length >= 2) return showSimpleModal("تنبيه", "أقصى عدد فرق هو 2.");
+        gameState.players.push({ 
+            id: Date.now(), 
+            name, 
+            score: 0, 
+            history: [],
+            usedComplexOptions: []
+        });
+        input.value = '';
+        renderPlayers();
+    }
+
+    function renderPlayers() {
+        const list = document.getElementById('players-list');
+        list.innerHTML = '';
+        const kingdomId = document.getElementById('kingdom-select')?.value;
+        const isComplexKingdom = (gameState.type === 'complex' && kingdomId === 'complex');
+        document.getElementById('bulk-action-container').style.display = (gameState.roundActive && !isComplexKingdom) ? 'block' : 'none';
+
+        gameState.players.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'player-card';
+            let historyHtml = p.history.length > 0 
+                ? p.history.map(h => `<span class="history-badge ${h >= 0 ? 'positive' : 'negative'}">${h >= 0 ? '+' : ''}${h}</span>`).join('')
+                : '<span class="empty-history">لا يوجد سجل</span>';
+
+            let actionHtml = '';
+            if (gameState.roundActive) {
+                if (isComplexKingdom) {
+                    const availableOptions = COMPLEX_OPTIONS.filter(opt => !p.usedComplexOptions.includes(opt.id));
+                    if (availableOptions.length > 0) {
+                        actionHtml = `
+                            <div class="complex-controls" style="display:flex; flex-direction:column; gap:8px; background:rgba(0,0,0,0.2); padding:10px; border-radius:10px;">
+                                <select id="k-select-${p.id}">
+                                    ${availableOptions.map(opt => `<option value="${opt.id}">${opt.name}</option>`).join('')}
+                                </select>
+                                <div style="display:flex; gap:8px;">
+                                    <input type="number" id="in-${p.id}" placeholder="العدد..." inputmode="numeric">
+                                    <button class="btn-individual" onclick="addComplexScore(${p.id})">إضافة</button>
+                                </div>
+                            </div>`;
+                    } else {
+                        actionHtml = `<div style="text-align:center; padding:10px; font-size:0.85rem; color:var(--text-gray);">تم إنهاء جميع ممالك الكومبليكس لهذا اللاعب</div>`;
+                    }
+                } else {
+                    let placeholder = "أدخل العدد...";
+                    if (kingdomId === 'trix') placeholder = "الترتيب (1-4)";
+                    if (gameState.type === 'tarneeb') placeholder = "النقاط (بحد أقصى 26)";
+                    if (gameState.type === 'hand') placeholder = "النقاط (-60 إلى 300)";
+                    actionHtml = `<input type="number" class="bulk-input" data-id="${p.id}" placeholder="${placeholder}" inputmode="numeric">`;
+                }
+            }
+
+            card.innerHTML = `
+                <div class="card-header"><span class="player-name-tag">${p.name}</span><span class="total-score">${p.score}</span></div>
+                <div class="score-history">${historyHtml}</div>${actionHtml}`;
+            list.appendChild(card);
+        });
+    }
+
+    function addComplexScore(pid) {
+        const input = document.getElementById(`in-${pid}`);
+        const kSelect = document.getElementById(`k-select-${pid}`);
+        if (!kSelect) return;
+        const count = parseInt(input.value);
+        const kType = kSelect.value;
+        if (isNaN(count)) return;
+        if (RANGE_LIMITS[kType] && count > RANGE_LIMITS[kType].max) {
+            return showSimpleModal("خطأ", `الحد الأقصى لـ ${kSelect.options[kSelect.selectedIndex].text} هو ${RANGE_LIMITS[kType].max}`);
+        }
+        const player = gameState.players.find(x => x.id === pid);
+        const change = count * KINGDOM_VALUES[kType];
+        player.score += change; 
+        player.history.push(change);
+        player.usedComplexOptions.push(kType);
+        input.value = ''; 
+        renderPlayers();
+    }
+
+    function submitAllScores() {
+        const inputs = document.querySelectorAll('.bulk-input');
+        const kType = document.getElementById('kingdom-select')?.value;
+        let totalInputSum = 0;
+        const tempValues = [];
+
+        for (let input of inputs) {
+            const val = parseInt(input.value) || 0;
+            totalInputSum += val;
+            tempValues.push({ pid: parseFloat(input.getAttribute('data-id')), val: val });
+
+            if (gameState.type === 'hand') {
+                if (val > RANGE_LIMITS.hand.max || val < RANGE_LIMITS.hand.min) {
+                    showSimpleModal("تنبيه", `نقاط الهاند يجب أن تكون بين ${RANGE_LIMITS.hand.min} و ${RANGE_LIMITS.hand.max}`);
+                    return;
+                }
+            }
+            if (kType === 'trix' && (val < 1 || val > 4) && input.value !== "") {
+                showSimpleModal("تنبيه", "الترتيب في التركس يجب أن يكون بين 1 و 4.");
+                return;
+            }
+        }
+
+        const targetType = (gameState.type === 'hand') ? 'hand' : (kType === 'trix' ? 'trix' : kType);
+        if (gameState.type === 'tarneeb') {
+            if (totalInputSum > RANGE_LIMITS.tarneeb.sum) return showSimpleModal("تنبيه", "المجموع لا يمكن أن يتجاوز 26");
+        } else if (RANGE_LIMITS[targetType]) {
+            const limits = RANGE_LIMITS[targetType];
+            if (totalInputSum > limits.sum) return showSimpleModal("تنبيه - المجموع مرتفع", `المجموع (${totalInputSum}) يتجاوز الحد (${limits.sum}).`);
+            if (limits.min > 0 && totalInputSum < limits.min) return showSimpleModal("تنبيه - المجموع ناقص", `المجموع (${totalInputSum}) أقل من الحد (${limits.min}).`);
+        }
+
+        let anyAdded = false;
+        for (let item of tempValues) {
+            if (item.val === 0 && !['tarneeb', 'trix', 'hand'].includes(gameState.type) && !['trix'].includes(kType)) continue;
+            const player = gameState.players.find(x => x.id === item.pid);
+            let change = item.val;
+            if (gameState.type === 'trix' || gameState.type === 'complex') {
+                const kObj = INITIAL_KINGDOMS[gameState.type].find(k => k.id === kType);
+                if (kObj && kObj.val === 'rank') {
+                    const ranks = {1: 200, 2: 150, 3: 100, 4: 50};
+                    change = ranks[item.val] || 0;
+                } else if (kObj && typeof kObj.val === 'number') {
+                    change = item.val * kObj.val;
+                }
+            }
+            anyAdded = true;
+            player.score += change; player.history.push(change);
+        }
+        if (anyAdded) { inputs.forEach(i => i.value = ''); renderPlayers(); }
+    }
+
+    function handleModeSwitch(newMode) {
+        if (gameState.mode === newMode) return;
+        
+        const hasPlayers = gameState.players.length > 0;
+        const hasInputText = document.getElementById('player-input').value.trim() !== "";
+        
+        if (hasPlayers || hasInputText) {
+            const m = document.getElementById('modal');
+            document.getElementById('modal-title').innerText = "تغيير وضع اللعب";
+            document.getElementById('modal-body').innerText = "تغيير الوضع سيؤدي إلى حذف اللاعبين والنتائج الحالية. هل أنت متأكد؟";
+            document.getElementById('modal-selection').innerHTML = '';
+            document.getElementById('modal-btns').innerHTML = `
+                <button onclick="closeModal()" style="flex:1; background:#444; border:none; color:white; border-radius:10px; padding:12px;">إلغاء</button>
+                <button onclick="confirmModeSwitch('${newMode}')" style="flex:1; background:var(--primary-blue); color:white; border:none; border-radius:10px; padding:12px;">تأكيد التغيير</button>
+            `;
+            m.style.display = 'flex';
+        } else {
+            setMode(newMode);
+        }
+    }
+
+    function confirmModeSwitch(newMode) {
+        closeModal();
+        document.getElementById('player-input').value = ""; // مسح الانبوت عند التغيير
+        setMode(newMode);
+    }
+
+    function setMode(m, skip = false) {
+        gameState.mode = m;
+        if (!skip) {
+            gameState.players = [];
+            renderPlayers();
+        }
+        
+        // تحديث الشكل البصري للأزرار
+        document.getElementById('mode-normal').classList.toggle('active', m === 'normal');
+        document.getElementById('mode-team').classList.toggle('active', m === 'team');
+        
+        // إعادة تهيئة الممالك إذا لزم الأمر
+        if (gameState.type === 'trix' || gameState.type === 'complex') {
+            setupKingdoms();
+        }
+    }
+
+    function openTarneebCheatModal() {
+        if (gameState.players.length === 0) return;
+        const m = document.getElementById('modal');
+        const selectionList = document.getElementById('modal-selection');
+        document.getElementById('modal-title').innerText = "من الفريق الذي غش؟ 🕵️‍♂️";
+        document.getElementById('modal-body').innerText = "سيتم خصم 5 نقاط من الفريق المختار.";
+        document.getElementById('modal-btns').innerHTML = `<button onclick="closeModal()" class="btn-individual" style="flex:1; background:#444;">إلغاء</button>`;
+        selectionList.innerHTML = '';
+        gameState.players.forEach(p => {
+            const btn = document.createElement('div'); btn.className = 'selection-btn'; btn.innerText = p.name;
+            btn.onclick = () => { p.score -= 5; p.history.push(-5); closeModal(); renderPlayers(); };
+            selectionList.appendChild(btn);
+        });
+        m.style.display = 'flex';
+    }
+
+    function switchView(v) {
+        document.getElementById('home-view').classList.remove('active');
+        document.getElementById('game-view').classList.remove('active');
+        document.getElementById(v + '-view').classList.add('active');
+    }
+
+    function showSimpleModal(title, body) {
+        closeModal();
+        const m = document.getElementById('modal');
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-body').innerText = body;
+        document.getElementById('modal-selection').innerHTML = '';
+        document.getElementById('modal-btns').innerHTML = `<button onclick="closeModal()" class="btn-individual" style="flex:1">حسناً</button>`;
+        m.style.display = 'flex';
+    }
+
+    function confirmExit() {
+        const m = document.getElementById('modal');
+        document.getElementById('modal-title').innerText = "تأكيد الخروج";
+        document.getElementById('modal-body').innerText = "هل تريد العودة للرئيسية؟ سيتم حذف النقاط الحالية.";
+        document.getElementById('modal-selection').innerHTML = '';
+        document.getElementById('modal-btns').innerHTML = `<button onclick="closeModal()" style="flex:1; background:#444; border:none; color:white; border-radius:10px; padding:12px;">إلغاء</button><button onclick="actualExit()" style="flex:1; background:var(--danger-red); color:white; border:none; border-radius:10px; padding:12px;">خروج</button>`;
+        m.style.display = 'flex';
+    }
+
+    function actualExit() { closeModal(); switchView('home'); }
+    function closeModal() { document.getElementById('modal').style.display = 'none'; }
+    function showWinner() { 
+        if (!gameState.players.length) return;
+        const s = [...gameState.players].sort((a,b) => b.score - a.score);
+        showSimpleModal("المتصدر حالياً 🏆", `${s[0].name} برصيد ${s[0].score} نقطة.`);
+    }
+    function confirmEndGame() {
+        const m = document.getElementById('modal');
+        document.getElementById('modal-title').innerText = "إنهاء اللعبة";
+        document.getElementById('modal-body').innerText = "هل انتهيتم؟ سيتم حذف النتائج.";
+        document.getElementById('modal-btns').innerHTML = `<button onclick="closeModal()" style="flex:1; background:#444; border:none; color:white; border-radius:10px; padding:12px;">إلغاء</button><button onclick="actualExit()" style="flex:1; background:var(--danger-red); color:white; border:none; border-radius:10px; padding:12px;">إنهاء</button>`;
+        m.style.display = 'flex';
+    }
+</script>
 </body>
 </html>
